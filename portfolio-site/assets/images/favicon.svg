@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PK">
-  <rect width="64" height="64" rx="12" fill="#10263a"/>
-  <path d="M14 48V16h15c7 0 12 4 12 10 0 7-5 11-13 11h-6v11h-8Zm8-18h6c3 0 5-1 5-4 0-2-2-4-5-4h-6v8Z" fill="#ffb86b"/>
-  <path d="M39 48 29 34l10-18h9L38 32l12 16h-11Z" fill="#8ce3cf"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Piyush Kapoor portfolio icon">
+  <rect width="64" height="64" rx="16" fill="#f5f1e8"/>
+  <path d="M9 32c0-12.703 10.297-23 23-23h23v23c0 12.703-10.297 23-23 23S9 44.703 9 32Z" fill="#10263a"/>
+  <path d="M16 48V16h15.2c7.31 0 12.5 4.22 12.5 10.88 0 6.83-5.02 11.34-12.96 11.34H24.2V48H16Zm8.2-16.62h6.1c3.38 0 5.38-1.62 5.38-4.36 0-2.68-1.96-4.18-5.38-4.18h-6.1v8.54Z" fill="#f5f1e8"/>
+  <path d="M41.4 48 31.18 34.24 41.46 16H51L40.7 32.1 53.36 48H41.4Z" fill="#d49b44"/>
+  <path d="M49.2 12.2 54.8 17.8" stroke="#137c78" stroke-width="3" stroke-linecap="round"/>
 </svg>

@@ -87,6 +87,7 @@ img {
 }
 
 .identity-mark {
+  position: relative;
   display: grid;
   width: 42px;
   height: 42px;
@@ -95,6 +96,20 @@ img {
   background: var(--navy);
   border-radius: 8px;
   font-size: 0.82rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.identity-mark::after {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  z-index: -1;
+  width: 24px;
+  height: 24px;
+  background: var(--gold);
+  border-radius: 50%;
+  content: "";
 }
 
 .main-nav {
