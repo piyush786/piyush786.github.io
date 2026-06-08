@@ -1,0 +1,16 @@
+{
+  "name": "Piyush Kapoor Portfolio",
+  "short_name": "Piyush Kapoor",
+  "description": "Technical Lead portfolio for Java Spring Boot, React Native, React.js, banking, payments, and API architecture.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
+  "icons": [
+    {
+      "src": "assets/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
