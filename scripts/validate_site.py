@@ -163,6 +163,25 @@ def validate() -> None:
             f"image missing dimensions: {image.get('src')}",
         )
 
+    for asset in (
+        "assets/images/piyush-kapoor-640.jpg",
+        "assets/images/piyush-kapoor-960.jpg",
+    ):
+        require((SITE / asset).exists(), f"missing generated asset: {asset}")
+
+    social_card = SITE / "assets/images/og-portfolio.png"
+    if social_card.exists():
+        require(
+            "assets/images/og-portfolio.png" in html,
+            "social metadata must use the accepted portfolio card",
+        )
+    else:
+        require(
+            'property="og:image"' not in html
+            and 'name="twitter:image"' not in html,
+            "invalid fallback social image metadata remains",
+        )
+
     require(parser.scripts, "missing JSON-LD")
     for _, payload in parser.scripts:
         structured = json.loads(payload)
@@ -172,6 +191,11 @@ def validate() -> None:
         )
 
     ET.parse(SITE / "sitemap.xml")
+    require(
+        "2026-07-10"
+        in (SITE / "sitemap.xml").read_text(encoding="utf-8"),
+        "sitemap date is stale",
+    )
     json.loads((SITE / "site.webmanifest").read_text(encoding="utf-8"))
     require(
         (SITE / "CNAME").read_text(encoding="utf-8").strip()
