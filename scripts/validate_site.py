@@ -105,6 +105,24 @@ def validate() -> None:
             f"agency language present: {forbidden}",
         )
 
+    css = (SITE / "assets/css/styles.css").read_text(encoding="utf-8")
+    for token in (
+        "#e8dcc8",
+        "#113d37",
+        "#1d2624",
+        "#d89b43",
+        "#f6f0e6",
+    ):
+        require(token in css.lower(), f"missing palette token: {token}")
+    for contract in (
+        "prefers-reduced-motion",
+        ":focus-visible",
+        "@media (max-width: 760px)",
+        ".project-story",
+        ".system-map",
+    ):
+        require(contract in css, f"missing CSS contract: {contract}")
+
     local_refs: set[str] = set()
     for ref in parser.local_refs:
         for candidate in ref.split(","):
