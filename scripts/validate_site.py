@@ -123,6 +123,21 @@ def validate() -> None:
     ):
         require(contract in css, f"missing CSS contract: {contract}")
 
+    javascript = (SITE / "assets/js/main.js").read_text(encoding="utf-8")
+    for contract in (
+        "aria-expanded",
+        "aria-controls",
+        "Close navigation",
+        "Escape",
+        "aria-current",
+        "IntersectionObserver",
+        "site-year",
+    ):
+        require(
+            contract in (html + javascript),
+            f"missing navigation contract: {contract}",
+        )
+
     local_refs: set[str] = set()
     for ref in parser.local_refs:
         for candidate in ref.split(","):
