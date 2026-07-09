@@ -1187,7 +1187,7 @@ button:focus-visible {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   html {
     scroll-padding-top: 68px;
   }

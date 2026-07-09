@@ -117,7 +117,7 @@ def validate() -> None:
     for contract in (
         "prefers-reduced-motion",
         ":focus-visible",
-        "@media (max-width: 760px)",
+        "@media (max-width: 900px)",
         ".project-story",
         ".system-map",
     ):
