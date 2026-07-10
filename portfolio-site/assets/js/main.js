@@ -54,11 +54,18 @@
     }
   });
 
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 760) {
+  const mobileNavigation = window.matchMedia("(max-width: 900px)");
+  const handleViewportChange = (event) => {
+    if (!event.matches) {
       setMenu(false);
     }
-  });
+  };
+
+  if (typeof mobileNavigation.addEventListener === "function") {
+    mobileNavigation.addEventListener("change", handleViewportChange);
+  } else {
+    mobileNavigation.addListener(handleViewportChange);
+  }
 
   if ("IntersectionObserver" in window) {
     const sections = links

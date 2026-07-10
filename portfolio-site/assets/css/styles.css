@@ -6,7 +6,7 @@
   --emerald-deep: #0b2f2b;
   --charcoal: #1d2624;
   --saffron: #d89b43;
-  --saffron-deep: #a86917;
+  --saffron-deep: #7a4c0c;
   --cream: #f6f0e6;
   --ink: #17322e;
   --muted: #596762;
@@ -1131,8 +1131,9 @@ h3 {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid #8d5508;
-  outline-offset: 4px;
+  outline: 3px solid var(--white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--emerald-deep);
 }
 
 @media (max-width: 1050px) {
@@ -1197,11 +1198,11 @@ button:focus-visible {
     padding: 10px 16px;
   }
 
-  .nav-toggle {
+  .js .nav-toggle {
     display: block;
   }
 
-  .main-nav {
+  .js .main-nav {
     position: fixed;
     top: 76px;
     right: 16px;
@@ -1214,11 +1215,24 @@ button:focus-visible {
     border: 1px solid var(--line);
     border-radius: 22px;
     box-shadow: var(--shadow);
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
   }
 
-  .main-nav.open,
-  .main-nav.is-open {
+  .js .main-nav.open,
+  .js .main-nav.is-open {
     display: flex;
+  }
+
+  .no-js .site-header {
+    flex-wrap: wrap;
+  }
+
+  .no-js .main-nav {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding-top: 6px;
   }
 
   .main-nav a {

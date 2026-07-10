@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import struct
 import sys
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
@@ -15,8 +16,11 @@ class PageParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.ids: set[str] = set()
+        self.id_values: list[str] = []
         self.local_refs: list[str] = []
         self.fragments: list[str] = []
+        self.meta: list[dict[str, str]] = []
+        self.links: list[dict[str, str]] = []
         self.scripts: list[tuple[dict[str, str], str]] = []
         self.images: list[dict[str, str]] = []
         self._json_attrs: dict[str, str] | None = None
@@ -26,6 +30,12 @@ class PageParser(HTMLParser):
         values = {key: value or "" for key, value in attrs}
         if values.get("id"):
             self.ids.add(values["id"])
+            self.id_values.append(values["id"])
+
+        if tag == "meta":
+            self.meta.append(values)
+        if tag == "link":
+            self.links.append(values)
 
         if tag in {"a", "link", "script", "img", "source"}:
             for key in ("href", "src", "srcset"):
@@ -78,6 +88,10 @@ def validate() -> None:
         required_ids <= parser.ids,
         f"missing section ids: {sorted(required_ids - parser.ids)}",
     )
+    duplicate_ids = sorted(
+        value for value in parser.ids if parser.id_values.count(value) > 1
+    )
+    require(not duplicate_ids, f"duplicate ids: {duplicate_ids}")
     require(
         not (set(parser.fragments) - parser.ids),
         f"broken fragment links: {sorted(set(parser.fragments) - parser.ids)}",
@@ -105,6 +119,12 @@ def validate() -> None:
             f"agency language present: {forbidden}",
         )
 
+    require('class="no-js"' in html, "document must expose a no-js fallback")
+    require(
+        'classList.replace("no-js", "js")' in html,
+        "document must enable enhanced navigation before CSS loads",
+    )
+
     css = (SITE / "assets/css/styles.css").read_text(encoding="utf-8")
     for token in (
         "#e8dcc8",
@@ -112,6 +132,7 @@ def validate() -> None:
         "#1d2624",
         "#d89b43",
         "#f6f0e6",
+        "#7a4c0c",
     ):
         require(token in css.lower(), f"missing palette token: {token}")
     for contract in (
@@ -120,6 +141,10 @@ def validate() -> None:
         "@media (max-width: 900px)",
         ".project-story",
         ".system-map",
+        ".no-js .main-nav",
+        "max-height: calc(100dvh - 84px)",
+        "overflow-y: auto",
+        "box-shadow: 0 0 0 6px var(--emerald-deep)",
     ):
         require(contract in css, f"missing CSS contract: {contract}")
 
@@ -132,6 +157,7 @@ def validate() -> None:
         "aria-current",
         "IntersectionObserver",
         "site-year",
+        "(max-width: 900px)",
     ):
         require(
             contract in (html + javascript),
@@ -175,6 +201,11 @@ def validate() -> None:
             "assets/images/og-portfolio.png" in html,
             "social metadata must use the accepted portfolio card",
         )
+        with social_card.open("rb") as image_file:
+            signature = image_file.read(24)
+        require(signature[:8] == b"\x89PNG\r\n\x1a\n", "social card is not PNG")
+        width, height = struct.unpack(">II", signature[16:24])
+        require((width, height) == (1200, 630), "social card must be 1200x630")
     else:
         require(
             'property="og:image"' not in html
@@ -183,12 +214,50 @@ def validate() -> None:
         )
 
     require(parser.scripts, "missing JSON-LD")
+    meta_by_name = {
+        item["name"]: item.get("content", "")
+        for item in parser.meta
+        if item.get("name")
+    }
+    meta_by_property = {
+        item["property"]: item.get("content", "")
+        for item in parser.meta
+        if item.get("property")
+    }
+    links_by_rel = {
+        item["rel"]: item.get("href", "")
+        for item in parser.links
+        if item.get("rel")
+    }
+    require(
+        links_by_rel.get("canonical") == "https://piyushkapoor.me/",
+        "canonical URL is missing or incorrect",
+    )
+    require(bool(meta_by_name.get("description")), "meta description is missing")
+    require(meta_by_name.get("theme-color") == "#113d37", "theme color is incorrect")
+    for name in ("twitter:card", "twitter:title", "twitter:description", "twitter:image"):
+        require(bool(meta_by_name.get(name)), f"missing metadata: {name}")
+    for name in ("og:type", "og:url", "og:title", "og:description", "og:image", "og:image:width", "og:image:height"):
+        require(bool(meta_by_property.get(name)), f"missing metadata: {name}")
+    require(meta_by_property.get("og:url") == "https://piyushkapoor.me/", "Open Graph URL is incorrect")
+    require(meta_by_property.get("og:image:width") == "1200", "Open Graph width is incorrect")
+    require(meta_by_property.get("og:image:height") == "630", "Open Graph height is incorrect")
+
+    structured_types: set[str] = set()
     for _, payload in parser.scripts:
         structured = json.loads(payload)
         require(
             "https://piyushkapoor.me/" in json.dumps(structured),
             "JSON-LD missing canonical domain",
         )
+        graph = structured.get("@graph", [structured])
+        structured_types.update(
+            item.get("@type", "") for item in graph if isinstance(item, dict)
+        )
+    require(
+        {"Person", "ProfilePage", "WebSite"} <= structured_types,
+        "JSON-LD is missing required schema types",
+    )
 
     ET.parse(SITE / "sitemap.xml")
     require(
@@ -196,7 +265,11 @@ def validate() -> None:
         in (SITE / "sitemap.xml").read_text(encoding="utf-8"),
         "sitemap date is stale",
     )
-    json.loads((SITE / "site.webmanifest").read_text(encoding="utf-8"))
+    manifest = json.loads((SITE / "site.webmanifest").read_text(encoding="utf-8"))
+    require(manifest.get("theme_color") == "#113d37", "manifest theme color is incorrect")
+    require(manifest.get("background_color") == "#e8dcc8", "manifest background color is incorrect")
+    for icon in manifest.get("icons", []):
+        require((SITE / icon["src"]).exists(), f"manifest icon is missing: {icon['src']}")
     require(
         (SITE / "CNAME").read_text(encoding="utf-8").strip()
         == "piyushkapoor.me",
